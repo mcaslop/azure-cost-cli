@@ -1,10 +1,11 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using AzureCostCli.Commands;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 using DevLab.JmesPath;
 using Spectre.Console;
 using Spectre.Console.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AzureCostCli.Commands.ShowCommand.OutputFormatters;
 
@@ -47,7 +48,7 @@ public class JsonOutputFormatter : BaseOutputFormatter
         return Task.CompletedTask;
     }
 
-    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    public override Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources)
     {
         WriteJson(settings, resources);
         
@@ -99,7 +100,7 @@ public class JsonOutputFormatter : BaseOutputFormatter
     }
 
 
-    private static void WriteJson(CostSettings settings, object items)
+    private static void WriteJson(ICommandSettings settings, object items)
     {
 
         var options = new JsonSerializerOptions { WriteIndented = true };

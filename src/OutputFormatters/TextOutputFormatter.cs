@@ -99,7 +99,7 @@ public class TextOutputFormatter : BaseOutputFormatter
     }
 
 
-    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    public override Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources)
     {
         if (settings.SkipHeader == false)
         {

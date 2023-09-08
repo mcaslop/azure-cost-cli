@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace AzureCostCli.Commands;
+namespace AzureCostCli.Commands.ShowCommand;
 
-public class CostSettings : LogCommandSettings, ICommandSettings
+public class DeepDiveTypeSettings : LogCommandSettings, ICommandSettings
 {
     [CommandOption("-s|--subscription")]
     [Description("The subscription id to use. Will try to fetch the active id if not specified.")]
@@ -52,10 +52,13 @@ public class CostSettings : LogCommandSettings, ICommandSettings
     [Description("The metric to use for the costs. Defaults to ActualCost. (ActualCost, AmortizedCost)")]
     [DefaultValue(MetricType.ActualCost)]
     public MetricType Metric { get; set; } = MetricType.ActualCost;
-}
 
-public enum MetricType
-{
-    ActualCost,
-    AmortizedCost
+    [CommandOption("--exclude-meter-details")]
+    [Description("Exclude meter details from the output.")]
+    [DefaultValue(false)]
+    public bool ExcludeMeterDetails { get; set; }
+
+    [CommandOption("--resource-type")]
+    [Description("The ResourceType to filter. Only the specified ResourceType will be included, by default includes all.")]
+    public string ResourceType { get; set; }
 }

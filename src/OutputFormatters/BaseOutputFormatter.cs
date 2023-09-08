@@ -9,7 +9,7 @@ public abstract class BaseOutputFormatter
 
     public abstract Task WriteCostByResource(CostByResourceSettings settings, IEnumerable<CostResourceItem> resources);
 
-    public abstract Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources);
+    public abstract Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources);
     
     public abstract Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets);
 

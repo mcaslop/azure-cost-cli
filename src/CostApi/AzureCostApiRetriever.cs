@@ -8,6 +8,7 @@ using Azure.Identity;
 using AzureCostCli.Commands;
 using Spectre.Console;
 using Spectre.Console.Json;
+using System.Linq;
 
 namespace AzureCostCli.CostApi;
 
@@ -827,7 +828,7 @@ public class AzureCostApiRetriever : ICostRetriever
 
     public async Task<IEnumerable<CostResourceItem>> RetrieveCostForResourceTypes(bool includeDebugOutput,
         Guid subscriptionId, string[] filter, MetricType metric, bool excludeMeterDetails, TimeframeType timeFrame, DateOnly from,
-        DateOnly to, string resourceTypeFilter)
+        DateOnly to, string resourceTypeFilter, string subscriptionName = null)
     {
         var uri = new Uri(
             $"/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000",
@@ -957,6 +958,10 @@ public class AzureCostApiRetriever : ICostRetriever
         CostQueryResponse? content = await response.Content.ReadFromJsonAsync<CostQueryResponse>();
 
         var items = new List<CostResourceItem>();
+        var resourceTypeFilterSetting = resourceTypeFilter is null 
+            ? string.Empty
+            : resourceTypeFilter.ToLowerInvariant();
+
         foreach (JsonElement row in content.properties.rows)
         {
             double cost = row[0].GetDouble();
@@ -966,9 +971,9 @@ public class AzureCostApiRetriever : ICostRetriever
 
             AnsiConsole.WriteLine($"ResourceType: {resourceType} ?= {resourceTypeFilter}");
             
-            if(resourceTypeFilter != null && resourceTypeFilter.Trim().Length > 0)
+            if(resourceTypeFilterSetting.Trim().Length > 0)
             {
-                if (resourceTypeFilter.ToLowerInvariant() == resourceType.ToLowerInvariant())
+                if (resourceType.ToLowerInvariant() != resourceTypeFilterSetting)
                     continue;
                 // if ("microsoft.compute/disks" != resourceType.ToLowerInvariant())
                 //     continue;
@@ -1005,7 +1010,8 @@ public class AzureCostApiRetriever : ICostRetriever
             string currency = row[currencyColumn].GetString();
 
             CostResourceItem item = new CostResourceItem(cost, costUSD, resourceId, resourceType, resourceLocation,
-                chargeType, resourceGroupName, publisherType, serviceName, serviceTier, meter, tags, currency);
+                chargeType, resourceGroupName, publisherType, serviceName, serviceTier, meter, tags, currency, subscriptionId, 
+                subscriptionName ?? subscriptionId.ToString());
 
             items.Add(item);
         }
@@ -1033,7 +1039,9 @@ public class AzureCostApiRetriever : ICostRetriever
                     groupedItem.First().PublisherType, 
                     null, null, null, 
                     groupedItem.First().Tags, 
-                    groupedItem.First().Currency
+                    groupedItem.First().Currency,
+                    groupedItem.First().SubscriptionId,
+                    groupedItem.First().SubscriptionName
                 );
                 aggregatedItems.Add(aggregatedItem);
             }

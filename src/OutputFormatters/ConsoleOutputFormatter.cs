@@ -253,31 +253,34 @@ public class ConsoleOutputFormatter : BaseOutputFormatter
     }
 
 
-    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    public override Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources)
     {
         
         // When we have meter details, we output the tree, otherwise we output a table
         if (settings.ExcludeMeterDetails == false)
         {
 
-            var tree = new Tree("Cost by resources");
+            var tree = new Tree("DeepDive");
             tree.Guide(TreeGuide.Line);
             
             foreach (var resource in resources.OrderByDescending(a => a.Cost))
             {
                 var table = new Table()
                     .Border(TableBorder.SimpleHeavy)
+                    .AddColumn("Subscription")
+                    .AddColumn("Resource group name")
                     .AddColumn("Resource")
                     .AddColumn("Resource Type")
                     .AddColumn("Location")
-                    .AddColumn("Resource group name")
                     .AddColumn("Tags")
                     .AddColumn("Cost", column => column.RightAligned());
 
-                table.AddRow(new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
+                table.AddRow(
+                    new Markup(resource.SubscriptionName.EscapeMarkup()),
+                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
+                    new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
                     new Markup(resource.ResourceType.EscapeMarkup()),
                     new Markup(resource.ResourceLocation.EscapeMarkup()),
-                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
                     resource.Tags.Any()?new JsonText(JsonSerializer.Serialize( resource.Tags)):new Markup(""),
                     settings.UseUSD
                         ? new Money(resource.CostUSD, "USD")
@@ -316,20 +319,23 @@ public class ConsoleOutputFormatter : BaseOutputFormatter
         {
             var table = new Table()
                              .RoundedBorder().Expand()
+                             .AddColumn("Subscription")
+                             .AddColumn("Resource group name")
                              .AddColumn("Resource")
                              .AddColumn("Resource Type")
                              .AddColumn("Location")
-                             .AddColumn("Resource group name")
                              .AddColumn("Tags")
                              .AddColumn("Cost", column => column.Width(15).RightAligned());
             
             foreach (var resource in resources.OrderByDescending(a => a.Cost))
             {
                 
-                table.AddRow(new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
+                table.AddRow(
+                    new Markup(resource.SubscriptionName.EscapeMarkup()),
+                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
+                    new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
                     new Markup(resource.ResourceType.EscapeMarkup()),
                     new Markup(resource.ResourceLocation.EscapeMarkup()),
-                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
                     resource.Tags.Any()?new JsonText(JsonSerializer.Serialize( resource.Tags)):new Markup(""),
                     settings.UseUSD
                         ? new Money(resource.CostUSD, "USD")

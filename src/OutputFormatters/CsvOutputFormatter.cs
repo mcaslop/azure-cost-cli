@@ -20,7 +20,7 @@ public class CsvOutputFormatter : BaseOutputFormatter
         return ExportToCsv(settings.SkipHeader, resources);
     }
 
-    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    public override Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources)
     {
         return ExportToCsv(settings.SkipHeader, resources);
     }
