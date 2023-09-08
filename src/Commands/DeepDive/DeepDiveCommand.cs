@@ -99,19 +99,29 @@ public class DeepDiveCommand : AsyncCommand<DeepDiveTypeSettings>
        }
        else
        {
+            Subscription singleSubscription = null;
+
+            await AnsiConsole
+                .Status()
+                .StartAsync("Fetching single subscription...", async ctx =>
+                {
+                    singleSubscription = await _costRetriever.RetrieveSubscription(settings.Debug, settings.Subscription);
+                });
+
             await AnsiConsole.Status()
                 .StartAsync("Fetching cost data for resources...", async ctx =>
                 {
                     List<CostResourceItem> singleSubsResources = (await _costRetriever.RetrieveCostForResourceTypes(
                         settings.Debug,
-                        settings.Subscription,
+                        Guid.Parse(singleSubscription.subscriptionId),
                         settings.Filter,
                         settings.Metric,
                         settings.ExcludeMeterDetails,
                         settings.Timeframe,
                         settings.From,
                         settings.To,
-                        settings.ResourceType)).ToList();
+                        settings.ResourceType,
+                        singleSubscription.displayName)).ToList();
 
                     resources.AddRange(singleSubsResources);
                 });

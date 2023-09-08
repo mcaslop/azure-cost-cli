@@ -114,13 +114,13 @@ public class TextOutputFormatter : BaseOutputFormatter
             if (settings.UseUSD)
             {
                 Console.WriteLine(
-                    $"{resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.ResourceGroupName} \t {resource.CostUSD:N2} USD");
+                    $"{resource.SubscriptionName} \t {resource.ResourceGroupName} \t {resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.CostUSD:N2} USD");
 
             }
             else
             {
                 Console.WriteLine(
-                    $"{resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.ResourceGroupName} \t {resource.Cost:N2} {resource.Currency}");
+                    $"{resource.SubscriptionName} \t {resource.ResourceGroupName} \t {resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.Cost:N2} {resource.Currency}");
             }
 
             if (settings.ExcludeMeterDetails == false)

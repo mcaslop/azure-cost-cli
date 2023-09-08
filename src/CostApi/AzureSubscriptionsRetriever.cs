@@ -1,8 +1,5 @@
 using Azure.Core;
 using Azure.Identity;
-using Azure.ResourceManager;
-using Azure.ResourceManager.Resources;
-using DevLab.JmesPath.Functions;
 using Spectre.Console;
 using Spectre.Console.Json;
 using System.Net.Http.Headers;

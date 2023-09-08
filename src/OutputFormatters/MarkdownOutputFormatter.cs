@@ -199,14 +199,14 @@ public class MarkdownOutputFormatter : BaseOutputFormatter
                 Console.WriteLine("# Azure Cost by Resource Type");
                 Console.WriteLine();
                 Console.WriteLine(
-                    "| ResourceName | ResourceType | Location | ResourceGroupName | Amount |");
-                Console.WriteLine("|---|---|---|---|---|---|---|---:|");
+                    " | SubscriptionName | ResourceGroupName | ResourceName | ResourceType | Location | Amount |");
+                Console.WriteLine("|---|---|---|---|---|---|---|---|---:|");
             }
 
             foreach (var cost in resources)
             {
                 Console.WriteLine(
-                    $"|{cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {cost.ResourceGroupName} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
+                    $"| {cost.SubscriptionName} | {cost.ResourceGroupName} | {cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
             }
         }
         else
@@ -217,14 +217,14 @@ public class MarkdownOutputFormatter : BaseOutputFormatter
                 Console.WriteLine("# Azure Cost by Resource Type");
                 Console.WriteLine();
                 Console.WriteLine(
-                    "| ResourceName | ResourceType | Location | ResourceGroupName | ServiceName | ServiceTier | Meter | Amount |");
-                Console.WriteLine("|---|---|---|---|---|---|---|---:|");
+                    "| SubscriptionName | ResourceGroupName | ResourceName | ResourceType | Location | ResourceGroupName | ServiceName | ServiceTier | Meter | Amount |");
+                Console.WriteLine("|---|---|---|---|---|---|---|---|---:|");
             }
 
             foreach (var cost in resources)
             {
                 Console.WriteLine(
-                    $"|{cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {cost.ResourceGroupName} |  {cost.ServiceName} | {cost.ServiceTier} | {cost.Meter} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
+                    $"| {cost.SubscriptionName} | {cost.ResourceGroupName} |{cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {cost.ServiceName} | {cost.ServiceTier} | {cost.Meter} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
             }
         }
 

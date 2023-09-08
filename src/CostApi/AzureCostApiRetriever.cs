@@ -969,14 +969,12 @@ public class AzureCostApiRetriever : ICostRetriever
             string resourceId = row[2].GetString();
             string resourceType = row[3].GetString();
 
-            AnsiConsole.WriteLine($"ResourceType: {resourceType} ?= {resourceTypeFilter}");
+            //AnsiConsole.WriteLine($"ResourceType: {resourceType} ?= {resourceTypeFilter}");
             
             if(resourceTypeFilterSetting.Trim().Length > 0)
             {
                 if (resourceType.ToLowerInvariant() != resourceTypeFilterSetting)
                     continue;
-                // if ("microsoft.compute/disks" != resourceType.ToLowerInvariant())
-                //     continue;
             }
             
 
