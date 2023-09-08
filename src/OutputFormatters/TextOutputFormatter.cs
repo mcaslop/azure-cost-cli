@@ -98,6 +98,47 @@ public class TextOutputFormatter : BaseOutputFormatter
         return Task.CompletedTask;
     }
 
+
+    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    {
+        if (settings.SkipHeader == false)
+        {
+            Console.WriteLine(
+                $"Azure Cost Overview for {settings.Subscription} by resource type");
+
+            Console.WriteLine();
+        }
+
+        foreach (var resource in resources.OrderByDescending(a=>a.Cost))
+        {
+            if (settings.UseUSD)
+            {
+                Console.WriteLine(
+                    $"{resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.ResourceGroupName} \t {resource.CostUSD:N2} USD");
+
+            }
+            else
+            {
+                Console.WriteLine(
+                    $"{resource.ResourceId.Split('/').Last()} \t {resource.ResourceType} \t {resource.ResourceLocation} \t {resource.ResourceGroupName} \t {resource.Cost:N2} {resource.Currency}");
+            }
+
+            if (settings.ExcludeMeterDetails == false)
+            {
+                foreach (var metered in resources
+                             .Where(a => a.ResourceId == resource.ResourceId)
+                             .OrderByDescending(a => a.Cost))
+                {
+                    Console.WriteLine(
+                        $"  + {metered.ServiceName} \t {metered.ServiceTier} \t {metered.Meter} \t {(settings.UseUSD ? metered.CostUSD : metered.Cost):N2} {metered.Currency}");
+                }
+            }
+
+        }
+      
+        return Task.CompletedTask;
+    }
+
     public override Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets)
     {
         if (settings.SkipHeader == false)

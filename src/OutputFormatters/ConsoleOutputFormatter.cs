@@ -252,6 +252,98 @@ public class ConsoleOutputFormatter : BaseOutputFormatter
         return Task.CompletedTask;
     }
 
+
+    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    {
+        
+        // When we have meter details, we output the tree, otherwise we output a table
+        if (settings.ExcludeMeterDetails == false)
+        {
+
+            var tree = new Tree("Cost by resources");
+            tree.Guide(TreeGuide.Line);
+            
+            foreach (var resource in resources.OrderByDescending(a => a.Cost))
+            {
+                var table = new Table()
+                    .Border(TableBorder.SimpleHeavy)
+                    .AddColumn("Resource")
+                    .AddColumn("Resource Type")
+                    .AddColumn("Location")
+                    .AddColumn("Resource group name")
+                    .AddColumn("Tags")
+                    .AddColumn("Cost", column => column.RightAligned());
+
+                table.AddRow(new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
+                    new Markup(resource.ResourceType.EscapeMarkup()),
+                    new Markup(resource.ResourceLocation.EscapeMarkup()),
+                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
+                    resource.Tags.Any()?new JsonText(JsonSerializer.Serialize( resource.Tags)):new Markup(""),
+                    settings.UseUSD
+                        ? new Money(resource.CostUSD, "USD")
+                        : new Money(resource.Cost,resource.Currency));
+
+                var treeNode = tree.AddNode(table);
+
+
+                var subTable = new Table()
+                    .Expand()
+                    .Border(TableBorder.Simple)
+                    .AddColumn("Service name")
+                    .AddColumn("Service tier")
+                    .AddColumn("Meter")
+                    .AddColumn("Cost", column => column.RightAligned());
+
+                foreach (var metered in resources
+                             .Where(a => a.ResourceId == resource.ResourceId)
+                             .OrderByDescending(a => a.Cost))
+                {
+                    subTable.AddRow(new Markup(metered.ServiceName.EscapeMarkup()),
+                        new Markup(metered.ServiceTier.EscapeMarkup()),
+                        new Markup(metered.Meter.EscapeMarkup()),
+                        settings.UseUSD
+                            ? new Money(metered.CostUSD, "USD")
+                            : new Money(metered.Cost, metered.Currency));
+                }
+
+                treeNode.AddNode(subTable);
+
+            }
+
+            AnsiConsole.Write(tree);
+        }
+        else
+        {
+            var table = new Table()
+                             .RoundedBorder().Expand()
+                             .AddColumn("Resource")
+                             .AddColumn("Resource Type")
+                             .AddColumn("Location")
+                             .AddColumn("Resource group name")
+                             .AddColumn("Tags")
+                             .AddColumn("Cost", column => column.Width(15).RightAligned());
+            
+            foreach (var resource in resources.OrderByDescending(a => a.Cost))
+            {
+                
+                table.AddRow(new Markup("[bold]"+resource.ResourceId.Split('/').Last().EscapeMarkup()+"[/]"),
+                    new Markup(resource.ResourceType.EscapeMarkup()),
+                    new Markup(resource.ResourceLocation.EscapeMarkup()),
+                    new Markup(resource.ResourceGroupName.EscapeMarkup()),
+                    resource.Tags.Any()?new JsonText(JsonSerializer.Serialize( resource.Tags)):new Markup(""),
+                    settings.UseUSD
+                        ? new Money(resource.CostUSD, "USD")
+                        : new Money(resource.Cost,resource.Currency));
+
+               
+            }
+            
+            AnsiConsole.Write(table);
+        }
+
+        return Task.CompletedTask;
+    }
+
     public override Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets)
     {
         var table = new Table()

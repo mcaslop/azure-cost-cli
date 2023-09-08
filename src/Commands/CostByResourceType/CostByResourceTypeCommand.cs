@@ -7,15 +7,15 @@ using AzureCostCli.Infrastructure;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace AzureCostCli.Commands.CostByResource;
+namespace AzureCostCli.Commands.CostByResourceType;
 
-public class CostByResourceCommand : AsyncCommand<CostByResourceSettings>
+public class CostByResourceTypeCommand : AsyncCommand<CostByResourceTypeSettings>
 {
     private readonly ICostRetriever _costRetriever;
 
     private readonly Dictionary<OutputFormat, BaseOutputFormatter> _outputFormatters = new();
 
-    public CostByResourceCommand(ICostRetriever costRetriever)
+    public CostByResourceTypeCommand(ICostRetriever costRetriever)
     {
         _costRetriever = costRetriever;
 
@@ -28,7 +28,7 @@ public class CostByResourceCommand : AsyncCommand<CostByResourceSettings>
         _outputFormatters.Add(OutputFormat.Csv, new CsvOutputFormatter());
     }
 
-    public override ValidationResult Validate(CommandContext context, CostByResourceSettings settings)
+    public override ValidationResult Validate(CommandContext context, CostByResourceTypeSettings settings)
     {
         // Validate if the timeframe is set to Custom, then the from and to dates must be specified and the from date must be before the to date
         if (settings.Timeframe == TimeframeType.Custom)
@@ -52,11 +52,11 @@ public class CostByResourceCommand : AsyncCommand<CostByResourceSettings>
         return ValidationResult.Success();
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, CostByResourceSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, CostByResourceTypeSettings settings)
     {
         // Show version
         if (settings.Debug)
-            AnsiConsole.WriteLine($"Version: {typeof(CostByResourceCommand).Assembly.GetName().Version}");
+            AnsiConsole.WriteLine($"Version: {typeof(CostByResourceTypeCommand).Assembly.GetName().Version}");
 
 
         // Get the subscription ID from the settings
@@ -92,7 +92,7 @@ public class CostByResourceCommand : AsyncCommand<CostByResourceSettings>
         await AnsiConsole.Status()
             .StartAsync("Fetching cost data for resources...", async ctx =>
             {
-                resources = await _costRetriever.RetrieveCostForResources(
+                resources = await _costRetriever.RetrieveCostForResourceTypes(
                     settings.Debug,
                     subscriptionId,
                     settings.Filter,
@@ -100,12 +100,13 @@ public class CostByResourceCommand : AsyncCommand<CostByResourceSettings>
                     settings.ExcludeMeterDetails,
                     settings.Timeframe,
                     settings.From,
-                    settings.To);
+                    settings.To,
+                    settings.ResourceType);
             });
 
         // Write the output
         await _outputFormatters[settings.Output]
-            .WriteCostByResource(settings, resources);
+            .WriteCostByResourceType(settings, resources);
 
         return 0;
     }

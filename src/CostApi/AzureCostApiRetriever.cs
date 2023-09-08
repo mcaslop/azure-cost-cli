@@ -801,7 +801,240 @@ public class AzureCostApiRetriever : ICostRetriever
             var groupedItems = items.GroupBy(x => x.ResourceId);
             foreach (var groupedItem in groupedItems)
             {
-                var aggregatedItem = new CostResourceItem(groupedItem.Sum(x => x.Cost), groupedItem.Sum(x => x.CostUSD), groupedItem.Key, groupedItem.First().ResourceType, string.Join(", ", groupedItem.Select(x => x.ResourceLocation)), groupedItem.First().ChargeType, groupedItem.First().ResourceGroupName, groupedItem.First().PublisherType, null, null, null, groupedItem.First().Tags, groupedItem.First().Currency);
+                // if(groupedItem.First().ResourceType.ToLowerInvariant() != "disks")
+                //     continue;
+
+                var aggregatedItem = new CostResourceItem(
+                    groupedItem.Sum(x => x.Cost), 
+                    groupedItem.Sum(x => x.CostUSD), 
+                    groupedItem.Key, 
+                    groupedItem.First().ResourceType, 
+                    string.Join(", ", groupedItem.Select(x => x.ResourceLocation)), 
+                    groupedItem.First().ChargeType, 
+                    groupedItem.First().ResourceGroupName, 
+                    groupedItem.First().PublisherType, 
+                    null, null, null, 
+                    groupedItem.First().Tags, 
+                    groupedItem.First().Currency
+                );
+                aggregatedItems.Add(aggregatedItem);
+            }
+            
+            return aggregatedItems;
+        }
+        return items;
+    }
+
+    public async Task<IEnumerable<CostResourceItem>> RetrieveCostForResourceTypes(bool includeDebugOutput,
+        Guid subscriptionId, string[] filter, MetricType metric, bool excludeMeterDetails, TimeframeType timeFrame, DateOnly from,
+        DateOnly to, string resourceTypeFilter)
+    {
+        var uri = new Uri(
+            $"/subscriptions/{subscriptionId}/providers/Microsoft.CostManagement/query?api-version=2021-10-01&$top=5000",
+            UriKind.Relative);
+
+        object grouping;
+        if (excludeMeterDetails==false)
+            grouping = new[]
+            {
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceId"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceType"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceLocation"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ChargeType"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceGroupName"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "PublisherType"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "MeterCategory"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "MeterSubcategory"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "Meter"
+                }
+            };
+        else
+        {
+            grouping = new[]
+            {
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceId"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceType"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceLocation"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ChargeType"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "ResourceGroupName"
+                },
+                new
+                {
+                    type = "Dimension",
+                    name = "PublisherType"
+                }
+            };
+        }
+        
+        var payload = new
+        {
+            type = metric.ToString(),
+            timeframe = timeFrame.ToString(),
+            timePeriod = timeFrame == TimeframeType.Custom
+                ? new
+                {
+                    from = from.ToString("yyyy-MM-dd"),
+                    to = to.ToString("yyyy-MM-dd")
+                }
+                : null,
+            dataSet = new
+            {
+                granularity = "None",
+                aggregation = new
+                {
+                    totalCost = new
+                    {
+                        name = "Cost",
+                        function = "Sum"
+                    },
+                    totalCostUSD = new
+                    {
+                        name = "CostUSD",
+                        function = "Sum"
+                    }
+                },
+                include = new[] { "Tags" },
+                filter = GenerateFilters(filter),
+                grouping = grouping,
+            }
+        };
+        var response = await ExecuteCallToCostApi(includeDebugOutput, payload, uri);
+
+        CostQueryResponse? content = await response.Content.ReadFromJsonAsync<CostQueryResponse>();
+
+        var items = new List<CostResourceItem>();
+        foreach (JsonElement row in content.properties.rows)
+        {
+            double cost = row[0].GetDouble();
+            double costUSD = row[1].GetDouble();
+            string resourceId = row[2].GetString();
+            string resourceType = row[3].GetString();
+
+            AnsiConsole.WriteLine($"ResourceType: {resourceType} ?= {resourceTypeFilter}");
+            
+            if(resourceTypeFilter != null && resourceTypeFilter.Trim().Length > 0)
+            {
+                // if (resourceTypeFilter.ToLowerInvariant() === resourceType.ToLowerInvariant())
+                //     continue;
+                if ("microsoft.compute/disks" != resourceType.ToLowerInvariant())
+                    continue;
+            }
+            
+
+            string resourceLocation = row[4].GetString();
+            string chargeType = row[5].GetString();
+            string resourceGroupName = row[6].GetString();
+            string publisherType = row[7].GetString();
+          
+            string serviceName = excludeMeterDetails?null:row[8].GetString();
+            string serviceTier = excludeMeterDetails?null:row[9].GetString();
+            string meter = excludeMeterDetails?null:row[10].GetString();
+      
+            int tagsColumn = excludeMeterDetails?8:11;
+            // Assuming row[tagsColumn] contains the tags array
+            var tagsArray = row[tagsColumn].EnumerateArray().ToArray();
+
+            Dictionary<string, string> tags = new Dictionary<string, string>();
+
+            foreach (var tagString in tagsArray)
+            {
+                var parts = tagString.GetString().Split(':');
+                if (parts.Length == 2) // Ensure the string is in the format "key:value"
+                {
+                    var key = parts[0].Trim('"'); // Remove quotes from the key
+                    var value = parts[1].Trim('"'); // Remove quotes from the value
+                    tags[key] = value;
+                }
+            }
+            
+            int currencyColumn = excludeMeterDetails?9:12;
+            string currency = row[currencyColumn].GetString();
+
+            CostResourceItem item = new CostResourceItem(cost, costUSD, resourceId, resourceType, resourceLocation,
+                chargeType, resourceGroupName, publisherType, serviceName, serviceTier, meter, tags, currency);
+
+            items.Add(item);
+        }
+
+        if (excludeMeterDetails)
+        {
+            // As we do not care about the meter details, we still have the possibility of resources with the same, but having multiple locations like Intercontinental, Unknown and Unassigned
+            // We need to aggregate these resources together and show the total cost for the resource, the resource locations need to be combined as well. So it can become West Europe, Intercontinental
+            
+            var aggregatedItems = new List<CostResourceItem>();
+            var groupedItems = items.GroupBy(x => x.ResourceId);
+            foreach (var groupedItem in groupedItems)
+            {
+                // if(groupedItem.First().ResourceType.ToLowerInvariant() != "disks")
+                //     continue;
+
+                var aggregatedItem = new CostResourceItem(
+                    groupedItem.Sum(x => x.Cost), 
+                    groupedItem.Sum(x => x.CostUSD), 
+                    groupedItem.Key, 
+                    groupedItem.First().ResourceType, 
+                    string.Join(", ", groupedItem.Select(x => x.ResourceLocation)), 
+                    groupedItem.First().ChargeType, 
+                    groupedItem.First().ResourceGroupName, 
+                    groupedItem.First().PublisherType, 
+                    null, null, null, 
+                    groupedItem.First().Tags, 
+                    groupedItem.First().Currency
+                );
                 aggregatedItems.Add(aggregatedItem);
             }
             

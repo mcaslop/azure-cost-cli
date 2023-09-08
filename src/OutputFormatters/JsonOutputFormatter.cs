@@ -47,6 +47,13 @@ public class JsonOutputFormatter : BaseOutputFormatter
         return Task.CompletedTask;
     }
 
+    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    {
+        WriteJson(settings, resources);
+        
+        return Task.CompletedTask;
+    }
+
     public override Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets)
     {
         WriteJson(settings, budgets);

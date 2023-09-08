@@ -188,6 +188,49 @@ public class MarkdownOutputFormatter : BaseOutputFormatter
         return Task.CompletedTask;
     }
 
+
+    public override Task WriteCostByResourceType(CostByResourceTypeSettings settings, IEnumerable<CostResourceItem> resources)
+    {
+
+        if (settings.ExcludeMeterDetails)
+        {
+            if (settings.SkipHeader == false)
+            {
+                Console.WriteLine("# Azure Cost by Resource Type");
+                Console.WriteLine();
+                Console.WriteLine(
+                    "| ResourceName | ResourceType | Location | ResourceGroupName | Amount |");
+                Console.WriteLine("|---|---|---|---|---|---|---|---:|");
+            }
+
+            foreach (var cost in resources)
+            {
+                Console.WriteLine(
+                    $"|{cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {cost.ResourceGroupName} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
+            }
+        }
+        else
+        {
+
+            if (settings.SkipHeader == false)
+            {
+                Console.WriteLine("# Azure Cost by Resource Type");
+                Console.WriteLine();
+                Console.WriteLine(
+                    "| ResourceName | ResourceType | Location | ResourceGroupName | ServiceName | ServiceTier | Meter | Amount |");
+                Console.WriteLine("|---|---|---|---|---|---|---|---:|");
+            }
+
+            foreach (var cost in resources)
+            {
+                Console.WriteLine(
+                    $"|{cost.ResourceId.Split('/').Last()} | {cost.ResourceType} | {cost.ResourceLocation} | {cost.ResourceGroupName} |  {cost.ServiceName} | {cost.ServiceTier} | {cost.Meter} | {(settings.UseUSD ? cost.CostUSD : cost.Cost):N2} {(settings.UseUSD ? "USD" : cost.Currency)} |");
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
     public override Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets)
     {
         if (settings.SkipHeader == false)

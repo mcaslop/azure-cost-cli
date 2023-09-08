@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using AzureCostCli.Commands;
 using AzureCostCli.Commands.CostByResource;
+using AzureCostCli.Commands.CostByResourceType;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.Commands.ShowCommand;
 using AzureCostCli.CostApi;
@@ -39,7 +39,7 @@ TypeDescriptor.AddAttributes(typeof(DateOnly), new TypeConverterAttribute(typeof
 var app = new CommandApp(registrar);
 
 // We default to the ShowCommand
-app.SetDefaultCommand<AccumulatedCostCommand>();
+app.SetDefaultCommand<CostByResourceTypeCommand>();
 
 app.Configure(config =>
 {
@@ -48,6 +48,7 @@ app.Configure(config =>
   config.AddExample(new[] { "accumulatedCost", "-s", "00000000-0000-0000-0000-000000000000" });
   config.AddExample(new[] { "accumulatedCost", "-o", "json" });
   config.AddExample(new[] { "costByResource", "-s", "00000000-0000-0000-0000-000000000000", "-o", "text" });
+  config.AddExample(new[] { "costByResourceType", "-s", "00000000-0000-0000-0000-000000000000", "--resource-type", "microsoft.compute/disks", "-o", "text" });
   config.AddExample(new[] { "dailyCosts", "--dimension", "MeterCategory" });
   config.AddExample(new[] { "budgets", "-s", "00000000-0000-0000-0000-000000000000" });
   config.AddExample(new[] { "detectAnomalies", "--dimension", "ResourceId", "--recent-activity-days", "4" });
@@ -65,6 +66,9 @@ app.Configure(config =>
   
   config.AddCommand<CostByResourceCommand>("costByResource")
     .WithDescription("Show the cost details by resource.");
+  
+  config.AddCommand<CostByResourceTypeCommand>("costByResourceType")
+    .WithDescription("Show the cost details by resource type.");
 
   config.AddCommand<CostByTagCommand>("costByTag")
     .WithDescription("Show the cost details by the provided tag key(s).");
