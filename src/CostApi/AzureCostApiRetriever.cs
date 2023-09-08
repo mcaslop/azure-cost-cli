@@ -968,10 +968,10 @@ public class AzureCostApiRetriever : ICostRetriever
             
             if(resourceTypeFilter != null && resourceTypeFilter.Trim().Length > 0)
             {
-                // if (resourceTypeFilter.ToLowerInvariant() === resourceType.ToLowerInvariant())
-                //     continue;
-                if ("microsoft.compute/disks" != resourceType.ToLowerInvariant())
+                if (resourceTypeFilter.ToLowerInvariant() == resourceType.ToLowerInvariant())
                     continue;
+                // if ("microsoft.compute/disks" != resourceType.ToLowerInvariant())
+                //     continue;
             }
             
 
