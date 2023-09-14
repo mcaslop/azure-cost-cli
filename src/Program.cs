@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.CostByResource;
 using AzureCostCli.Commands.CostByResourceType;
 using AzureCostCli.Commands.Regions;
@@ -26,9 +27,10 @@ registrations.AddHttpClient("RegionsApi", client =>
 }).AddPolicyHandler(PollyPolicyExtensions.GetRetryAfterPolicy());
 
 
-registrations.AddTransient<ISubscriptionsRetriever, AzureSubscriptionsRetriever>();
 registrations.AddTransient<ICostRetriever, AzureCostApiRetriever>();
+registrations.AddTransient<IMetricsRetriever, AzureMonitorMetricsRetriever>();
 registrations.AddTransient<IRegionsRetriever, AzureRegionsRetriever>();
+registrations.AddTransient<ISubscriptionsRetriever, AzureSubscriptionsRetriever>();
 
 var registrar = new TypeRegistrar(registrations);
 
@@ -40,20 +42,22 @@ TypeDescriptor.AddAttributes(typeof(DateOnly), new TypeConverterAttribute(typeof
 var app = new CommandApp(registrar);
 
 // We default to the ShowCommand
-app.SetDefaultCommand<DeepDiveCommand>();
+// app.SetDefaultCommand<DeepDiveCommand>();
+app.SetDefaultCommand<MetricsCommand>();
 
 app.Configure(config =>
 {
   config.SetApplicationName("azure-cost");
 
-  config.AddExample(new[] { "accumulatedCost", "-s", "00000000-0000-0000-0000-000000000000" });
   config.AddExample(new[] { "accumulatedCost", "-o", "json" });
-  config.AddExample(new[] { "costByResource", "-s", "00000000-0000-0000-0000-000000000000", "-o", "text" });
-  config.AddExample(new[] { "deepDive", "-s", "00000000-0000-0000-0000-000000000000", "--resource-type", "microsoft.compute/disks", "-o", "text" });
-  config.AddExample(new[] { "dailyCosts", "--dimension", "MeterCategory" });
+  config.AddExample(new[] { "accumulatedCost", "-s", "00000000-0000-0000-0000-000000000000" });
   config.AddExample(new[] { "budgets", "-s", "00000000-0000-0000-0000-000000000000" });
-  config.AddExample(new[] { "detectAnomalies", "--dimension", "ResourceId", "--recent-activity-days", "4" });
+  config.AddExample(new[] { "costByResource", "-s", "00000000-0000-0000-0000-000000000000", "-o", "text" });
   config.AddExample(new[] { "costByTag", "--tag", "cost-center" });
+  config.AddExample(new[] { "metrics"});
+  config.AddExample(new[] { "dailyCosts", "--dimension", "MeterCategory" });
+  config.AddExample(new[] { "deepDive", "-s", "00000000-0000-0000-0000-000000000000", "--resource-type", "microsoft.compute/disks", "-o", "text" });
+  config.AddExample(new[] { "detectAnomalies", "--dimension", "ResourceId", "--recent-activity-days", "4" });
   
 #if DEBUG
   config.PropagateExceptions();
@@ -79,6 +83,9 @@ app.Configure(config =>
   
   config.AddCommand<BudgetsCommand>("budgets")
     .WithDescription("Get the available budgets.");
+
+  config.AddCommand<MetricsCommand>("metrics")
+    .WithDescription("Metrics for resource");
   
   config.AddCommand<RegionsCommand>("regions")
     .WithDescription("Get the available Azure regions.");

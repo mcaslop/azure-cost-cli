@@ -1,6 +1,4 @@
-using System.Diagnostics;
-using System.Globalization;
-using System.Text.Json;
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.ShowCommand.OutputFormatters;
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;

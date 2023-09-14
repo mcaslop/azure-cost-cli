@@ -1,3 +1,4 @@
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 

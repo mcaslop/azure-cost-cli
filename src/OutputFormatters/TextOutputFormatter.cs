@@ -1,4 +1,5 @@
 using System.Globalization;
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;

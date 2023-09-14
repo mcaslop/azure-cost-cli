@@ -1,10 +1,12 @@
 using System.Dynamic;
 using System.Globalization;
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
+using Spectre.Console;
 
 namespace AzureCostCli.Commands.ShowCommand.OutputFormatters;
 
@@ -22,7 +24,7 @@ public class CsvOutputFormatter : BaseOutputFormatter
 
     public override Task WriteDeepDive(DeepDiveTypeSettings settings, IEnumerable<CostResourceItem> resources)
     {
-        return ExportToCsv(settings.SkipHeader, resources);
+        return ExportToCsv(settings, resources);
     }
     
     public override Task WriteBudgets(BudgetsSettings settings, IEnumerable<BudgetItem> budgets)
@@ -90,12 +92,31 @@ public class CsvOutputFormatter : BaseOutputFormatter
 
             Console.Write(writer.ToString());
         }
-
         return Task.CompletedTask;
     }
 
-   
-    
+    private static Task ExportToCsv(DeepDiveTypeSettings settings, IEnumerable<object> resources)
+    {
+        var config = new CsvConfiguration(CultureInfo.CurrentCulture)
+        {
+            HasHeaderRecord = settings.SkipHeader == false
+        };
+        
+        var defaultPath = Path.Combine(Environment.CurrentDirectory, $"deepDive_{DateTime.Now.ToString("yyMMddhhmmss")}.csv");
+        var location = settings.OutputLocation ?? defaultPath;
+        
+        if(settings.Debug)
+            AnsiConsole.WriteLine($"Output to: {location}");
+
+        using (var writer = new StreamWriter(location))
+        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        {
+            csv.Context.TypeConverterCache.AddConverter<double>(new CustomDoubleConverter());
+            csv.WriteRecords(resources);
+        }
+
+        return Task.CompletedTask;
+    }
     
 }
 

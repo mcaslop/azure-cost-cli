@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using AzureCostCli.APIs;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;

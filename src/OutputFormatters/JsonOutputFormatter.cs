@@ -1,4 +1,3 @@
-using AzureCostCli.Commands;
 using AzureCostCli.Commands.Regions;
 using AzureCostCli.CostApi;
 using DevLab.JmesPath;
@@ -6,6 +5,7 @@ using Spectre.Console;
 using Spectre.Console.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AzureCostCli.APIs;
 
 namespace AzureCostCli.Commands.ShowCommand.OutputFormatters;
 
