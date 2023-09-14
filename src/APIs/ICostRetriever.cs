@@ -1,6 +1,7 @@
 using AzureCostCli.Commands;
+using AzureCostCli.CostApi;
 
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.APIs;
 
 public interface ICostRetriever
 {

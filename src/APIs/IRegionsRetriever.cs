@@ -1,4 +1,4 @@
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.APIs;
 
 public interface IRegionsRetriever
 {

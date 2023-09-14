@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.APIs;
 
 public class AzureRegionsRetriever: IRegionsRetriever
 {

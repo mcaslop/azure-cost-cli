@@ -1,13 +1,14 @@
-using Azure.Core;
-using Azure.Identity;
-using Spectre.Console;
-using Spectre.Console.Json;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Azure.Core;
+using Azure.Identity;
+using AzureCostCli.CostApi;
+using Spectre.Console;
+using Spectre.Console.Json;
 
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.APIs;
 
 public class AzureSubscriptionsRetriever : ISubscriptionsRetriever
 {

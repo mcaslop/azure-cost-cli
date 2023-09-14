@@ -6,11 +6,11 @@ using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
 using AzureCostCli.Commands;
+using AzureCostCli.CostApi;
 using Spectre.Console;
 using Spectre.Console.Json;
-using System.Linq;
 
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.APIs;
 
 public class AzureCostApiRetriever : ICostRetriever
 {
