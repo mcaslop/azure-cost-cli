@@ -8,7 +8,7 @@ using AzureCostCli.CostApi;
 using Spectre.Console;
 using Spectre.Console.Json;
 
-namespace AzureCostCli.APIs;
+namespace AzureCostCli.Retrievers;
 
 public class AzureSubscriptionsRetriever : ISubscriptionsRetriever
 {

@@ -4,10 +4,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
+using AzureCostCli.DTOs;
 using Spectre.Console;
 using Spectre.Console.Json;
 
-namespace AzureCostCli.APIs;
+namespace AzureCostCli.Retrievers;
 
 public class AzureMonitorMetricsRetriever : IMetricsRetriever
 {
@@ -100,11 +101,11 @@ public class AzureMonitorMetricsRetriever : IMetricsRetriever
 
         var response = await ExecuteToCallApi(true, null, uri);
 
-        var subsResponse  = await response.Content.ReadAsStringAsync();
+        var metricResponse = await response.Content.ReadFromJsonAsync<MetricsResponse>();
 
         AnsiConsole.Write("Obtained response:");
         
-        AnsiConsole.Write(new JsonText(JsonSerializer.Serialize(subsResponse)));
+        AnsiConsole.Write(new JsonText(JsonSerializer.Serialize(metricResponse)));
     }
 
 }
