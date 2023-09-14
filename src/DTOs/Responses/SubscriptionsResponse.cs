@@ -1,4 +1,6 @@
-namespace AzureCostCli.CostApi;
+using AzureCostCli.CostApi;
+
+namespace AzureCostCli.DTOs.Responses;
 
 public class SubscriptionsResponse
 {

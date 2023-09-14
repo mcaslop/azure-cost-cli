@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
 using AzureCostCli.CostApi;
+using AzureCostCli.DTOs.Responses;
 using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Json;

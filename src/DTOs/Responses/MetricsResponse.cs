@@ -1,4 +1,4 @@
-namespace AzureCostCli.DTOs;
+namespace AzureCostCli.DTOs.Responses;
 
 public record MetricsResponse(int cost, string timespan, string interval, GG value, string @namespace,
     string resourceregion);

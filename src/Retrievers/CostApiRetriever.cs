@@ -7,6 +7,7 @@ using Azure.Core;
 using Azure.Identity;
 using AzureCostCli.Commands;
 using AzureCostCli.CostApi;
+using AzureCostCli.DTOs.Responses;
 using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Json;

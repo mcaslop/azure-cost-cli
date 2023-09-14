@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AzureCostCli.CostApi;
+namespace AzureCostCli.DTOs.Responses;
 
 public class CostQueryResponse
 {
