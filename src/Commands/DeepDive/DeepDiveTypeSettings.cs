@@ -12,6 +12,10 @@ public class DeepDiveTypeSettings : LogCommandSettings, ICommandSettings
     [CommandOption("-o|--output")] 
     [Description("The output format to use. Defaults to Console (Console, Json, JsonC, Text, Markdown, Csv)")]
     public OutputFormat Output { get; set; } = OutputFormat.Console;
+
+    [CommandOption("--output-location")] 
+    [Description("The output location to create the file. Defaults to same running directory. * Only available for output options: Json, Text, Markdown, Csv)")]
+    public string OutputLocation { get; set; }
     
     [CommandOption("-t|--timeframe")]
     [Description(  "The timeframe to use for the costs. Defaults to BillingMonthToDate. When set to Custom, specify the from and to dates using the --from and --to options")]
