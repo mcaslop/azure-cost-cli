@@ -1,6 +1,6 @@
 using AzureCostCli.CostApi;
 
-namespace AzureCostCli.Retrievers;
+namespace AzureCostCli.Retrievers.Contracts;
 
 public interface ISubscriptionsRetriever
 {

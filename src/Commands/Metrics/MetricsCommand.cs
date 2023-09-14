@@ -1,10 +1,10 @@
-using AzureCostCli.APIs;
-using AzureCostCli.Commands.ShowCommand;
-using AzureCostCli.Commands.ShowCommand.OutputFormatters;
+using AzureCostCli.OutputFormatters;
+using AzureCostCli.Retrievers;
+using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace AzureCostCli.Commands.CostByResourceType;
+namespace AzureCostCli.Commands.Metrics;
 
 public class MetricsCommand : AsyncCommand<MetricsTypeSettings>
 {

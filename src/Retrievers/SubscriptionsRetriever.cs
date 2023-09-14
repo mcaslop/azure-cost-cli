@@ -4,18 +4,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Azure.Core;
 using Azure.Identity;
-using AzureCostCli.DTOs;
+using AzureCostCli.CostApi;
+using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Json;
 
 namespace AzureCostCli.Retrievers;
 
-public class AzureMonitorMetricsRetriever : IMetricsRetriever
+public class SubscriptionsRetriever : ISubscriptionsRetriever
 {
     private readonly HttpClient _client;
     private bool _tokenRetrieved;
 
-    public AzureMonitorMetricsRetriever(IHttpClientFactory httpClientFactory)
+    public SubscriptionsRetriever(IHttpClientFactory httpClientFactory)
     {
         _client = httpClientFactory.CreateClient("CostApi");
     }
@@ -45,7 +46,7 @@ public class AzureMonitorMetricsRetriever : IMetricsRetriever
         _tokenRetrieved = true;
     }
 
-    private async Task<HttpResponseMessage> ExecuteToCallApi(bool includeDebugOutput, object? payload, Uri uri)
+    private async Task<HttpResponseMessage> ExecuteCallToCostApi(bool includeDebugOutput, object? payload, Uri uri)
     {
         await RetrieveToken(includeDebugOutput);
 
@@ -70,42 +71,26 @@ public class AzureMonitorMetricsRetriever : IMetricsRetriever
         {
             AnsiConsole.WriteLine(
                 $"Response status code is {response.StatusCode} and got payload size of {response.Content.Headers.ContentLength}");
-
-            // if (!response.IsSuccessStatusCode)
-            // {
-            //     AnsiConsole.WriteLine($"Response content: {await response.Content.ReadAsStringAsync()}");
-            // }
-
-            var responsess = await response.Content.ReadFromJsonAsync<object?>();
-            var ttt = JsonSerializer.Serialize(responsess);
-            AnsiConsole.WriteLine($"Response content: {ttt}");
+            if (!response.IsSuccessStatusCode)
+            {
+                AnsiConsole.WriteLine($"Response content: {await response.Content.ReadAsStringAsync()}");
+            }
         }
 
         response.EnsureSuccessStatusCode();
         return response;
     }
 
-    public async Task RetrieveMetricsForResource()
+    public async Task<IReadOnlyCollection<Subscription>> RetrieveAllSubscriptions()
     {
-        var azureResourceUri =
-            // "/subscriptions/cbc9b442-7c6e-415f-80f9-8f772fa43e9a/resourceGroups/UW2LRGEXCH132/providers/Microsoft.Compute/disks/Admigration12_2008_disk";
-            "/subscriptions/c6e364ad-9cd3-4c26-b358-75a532f60a7f/resourceGroups/UW2PRGELK/providers/Microsoft.Compute/disks/uw2pvmelkdat04_OsDisk_1_7b845cfab72548a5b40df1fb8a8e3754";
-
-        // var uri = new Uri(
-        //     $"{azureResourceUri}/providers/Microsoft.Insights/metrics?api-version=2018-01-01",
-        //     UriKind.Relative);
-
-        var uri = new Uri(
-            $"{azureResourceUri}/providers/Microsoft.Insights/metrics?api-version=2018-01-01",
+         var uri = new Uri(
+            $"/subscriptions?api-version=2022-12-01",
             UriKind.Relative);
 
-        var response = await ExecuteToCallApi(true, null, uri);
+        var response = await ExecuteCallToCostApi(true, null, uri);
 
-        var metricResponse = await response.Content.ReadFromJsonAsync<MetricsResponse>();
-
-        AnsiConsole.Write("Obtained response:");
+        var subsResponse  = await response.Content.ReadFromJsonAsync<SubscriptionsResponse>();
         
-        AnsiConsole.Write(new JsonText(JsonSerializer.Serialize(metricResponse)));
+        return subsResponse.value;
     }
-
 }

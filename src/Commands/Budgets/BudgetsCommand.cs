@@ -1,11 +1,12 @@
-using AzureCostCli.APIs;
-using AzureCostCli.Commands.ShowCommand;
-using AzureCostCli.Commands.ShowCommand.OutputFormatters;
+using AzureCostCli.Commands.CostByResource;
 using AzureCostCli.Infrastructure;
+using AzureCostCli.OutputFormatters;
+using AzureCostCli.Retrievers;
+using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace AzureCostCli.Commands.CostByResource;
+namespace AzureCostCli.Commands.Budgets;
 
 public class BudgetsCommand: AsyncCommand<BudgetsSettings>
 {

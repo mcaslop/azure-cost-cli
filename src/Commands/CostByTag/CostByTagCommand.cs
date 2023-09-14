@@ -1,12 +1,13 @@
-using AzureCostCli.APIs;
-using AzureCostCli.Commands.ShowCommand;
-using AzureCostCli.Commands.ShowCommand.OutputFormatters;
+using AzureCostCli.Commands.CostByResource;
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;
+using AzureCostCli.OutputFormatters;
+using AzureCostCli.Retrievers;
+using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
-namespace AzureCostCli.Commands.CostByResource;
+namespace AzureCostCli.Commands.CostByTag;
 
 public class CostByTagCommand : AsyncCommand<CostByTagSettings>
 {

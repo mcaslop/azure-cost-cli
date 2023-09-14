@@ -7,12 +7,13 @@ using Azure.Core;
 using Azure.Identity;
 using AzureCostCli.Commands;
 using AzureCostCli.CostApi;
+using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Json;
 
 namespace AzureCostCli.Retrievers;
 
-public class AzureCostApiRetriever : ICostRetriever
+public class CostApiRetriever : ICostRetriever
 {
     private readonly HttpClient _client;
     private bool _tokenRetrieved;
@@ -37,7 +38,7 @@ public class AzureCostApiRetriever : ICostRetriever
         // Add more dimension names as needed
     }
 
-    public AzureCostApiRetriever(IHttpClientFactory httpClientFactory)
+    public CostApiRetriever(IHttpClientFactory httpClientFactory)
     {
         _client = httpClientFactory.CreateClient("CostApi");
     }

@@ -1,12 +1,13 @@
 using System.Net.Http.Json;
+using AzureCostCli.Retrievers.Contracts;
 
 namespace AzureCostCli.Retrievers;
 
-public class AzureRegionsRetriever: IRegionsRetriever
+public class RegionsRetriever: IRegionsRetriever
 {
     private readonly HttpClient _client;
 
-    public AzureRegionsRetriever(IHttpClientFactory httpClientFactory)
+    public RegionsRetriever(IHttpClientFactory httpClientFactory)
     {
         _client = httpClientFactory.CreateClient("RegionsApi");
     }

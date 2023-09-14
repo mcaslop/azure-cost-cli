@@ -1,12 +1,18 @@
 ﻿using System.ComponentModel;
-using AzureCostCli.APIs;
+using AzureCostCli.Commands.AccumulatedCost;
+using AzureCostCli.Commands.Budgets;
 using AzureCostCli.Commands.CostByResource;
-using AzureCostCli.Commands.CostByResourceType;
+using AzureCostCli.Commands.CostByTag;
+using AzureCostCli.Commands.DailyCost;
+using AzureCostCli.Commands.DeepDive;
+using AzureCostCli.Commands.DetectAnomaly;
+using AzureCostCli.Commands.Metrics;
 using AzureCostCli.Commands.Regions;
-using AzureCostCli.Commands.ShowCommand;
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;
 using AzureCostCli.Infrastructure.TypeConvertors;
+using AzureCostCli.Retrievers;
+using AzureCostCli.Retrievers.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 
@@ -27,10 +33,10 @@ registrations.AddHttpClient("RegionsApi", client =>
 }).AddPolicyHandler(PollyPolicyExtensions.GetRetryAfterPolicy());
 
 
-registrations.AddTransient<ICostRetriever, AzureCostApiRetriever>();
-registrations.AddTransient<IMetricsRetriever, AzureMonitorMetricsRetriever>();
-registrations.AddTransient<IRegionsRetriever, AzureRegionsRetriever>();
-registrations.AddTransient<ISubscriptionsRetriever, AzureSubscriptionsRetriever>();
+registrations.AddTransient<ICostRetriever, CostApiRetriever>();
+registrations.AddTransient<IMetricsRetriever, MonitorMetricsRetriever>();
+registrations.AddTransient<IRegionsRetriever, RegionsRetriever>();
+registrations.AddTransient<ISubscriptionsRetriever, SubscriptionsRetriever>();
 
 var registrar = new TypeRegistrar(registrations);
 
