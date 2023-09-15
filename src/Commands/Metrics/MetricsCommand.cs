@@ -1,5 +1,5 @@
+using AzureCostCli.DTOs.Responses;
 using AzureCostCli.OutputFormatters;
-using AzureCostCli.Retrievers;
 using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -62,16 +62,26 @@ public class MetricsCommand : AsyncCommand<MetricsTypeSettings>
         if (settings.Debug)
             AnsiConsole.WriteLine($"Version: {typeof(MetricsCommand).Assembly.GetName().Version}");
 
-       await AnsiConsole
+        var diskResourceId =
+            "subscriptions/cbc9b442-7c6e-415f-80f9-8f772fa43e9a/resourceGroups/UW2LRGEXCH132/providers/Microsoft.Compute/disks/2008_r2_image_disk";
+        
+        // MetricsResponse metricResponse = null;
+        // await AnsiConsole
+        //     .Status()
+        //     .StartAsync($"Fetching metrics ...", async ctx =>
+        //     {
+        //         metricResponse = await _metricsRetriever.RetrieveMetricsForResource();
+        //     }); 
+        //
+        // // Write the output
+        // JsonOutputFormatter.WriteJson(settings, metricResponse);
+        
+        await AnsiConsole
             .Status()
             .StartAsync($"Fetching metrics ...", async ctx =>
             {
-                await _metricsRetriever.RetrieveMetricsForResource();
+                await _metricsRetriever.RetrieveMetricsForDisk(diskResourceId);
             }); 
-
-        // Write the output
-        // await _outputFormatters[settings.Output]
-        //     .WriteMetrics(settings, resources);
 
         return 0;
     }

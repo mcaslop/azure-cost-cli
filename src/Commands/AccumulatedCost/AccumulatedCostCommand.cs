@@ -1,7 +1,6 @@
 using AzureCostCli.CostApi;
 using AzureCostCli.Infrastructure;
 using AzureCostCli.OutputFormatters;
-using AzureCostCli.Retrievers;
 using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
 using Spectre.Console.Cli;

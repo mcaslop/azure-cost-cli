@@ -108,7 +108,7 @@ public class JsonOutputFormatter : BaseOutputFormatter
     }
 
 
-    private static void WriteJson(ICommandSettings settings, object items)
+    internal static void WriteJson(ICommandSettings settings, object items)
     {
 
         var options = new JsonSerializerOptions { WriteIndented = true };

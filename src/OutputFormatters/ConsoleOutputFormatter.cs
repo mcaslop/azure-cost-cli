@@ -688,5 +688,7 @@ public class ConsoleOutputFormatter : BaseOutputFormatter
         
         return Task.CompletedTask;
     }
+    
+    
 }
 

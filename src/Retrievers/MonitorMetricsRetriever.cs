@@ -1,111 +1,105 @@
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Azure.Core;
-using Azure.Identity;
-using AzureCostCli.DTOs;
+using AzureCostCli.Builders;
 using AzureCostCli.DTOs.Responses;
 using AzureCostCli.Retrievers.Contracts;
 using Spectre.Console;
-using Spectre.Console.Json;
 
 namespace AzureCostCli.Retrievers;
 
-public class MonitorMetricsRetriever : IMetricsRetriever
+public class MonitorMetricsRetriever : ApiRetriever, IMetricsRetriever
 {
-    private readonly HttpClient _client;
-    private bool _tokenRetrieved;
-
     public MonitorMetricsRetriever(IHttpClientFactory httpClientFactory)
+    : base(httpClientFactory.CreateClient("CostApi"))
     {
-        _client = httpClientFactory.CreateClient("CostApi");
     }
-
-    private async Task RetrieveToken(bool includeDebugOutput)
+    public async Task RetrieveMetricsForDisk(string diskResourceId)
     {
-        if (_tokenRetrieved)
-            return;
+        var url = "/batch?api-version=2015-11-01";
 
-        // Get the token by using the DefaultAzureCredential
-        var tokenCredential = new ChainedTokenCredential(
-            new AzureCliCredential(),
-            new DefaultAzureCredential());
-
-        if (includeDebugOutput)
-            AnsiConsole.WriteLine($"Using token credential: {tokenCredential.GetType().Name} to fetch a token.");
-
-        var token = await tokenCredential.GetTokenAsync(new TokenRequestContext(new[]
-            { $"https://management.azure.com/.default" }));
-
-        if (includeDebugOutput)
-            AnsiConsole.WriteLine($"Token retrieved and expires at: {token.ExpiresOn}");
-
-        // Set as the bearer token for the HTTP client
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-
-        _tokenRetrieved = true;
-    }
-
-    private async Task<HttpResponseMessage> ExecuteToCallApi(bool includeDebugOutput, object? payload, Uri uri)
-    {
-        await RetrieveToken(includeDebugOutput);
-
-        if (includeDebugOutput)
+        var uri = new Uri(url, UriKind.Relative);
+        
+        var payload = new
         {
-            AnsiConsole.WriteLine($"Retrieving data from {uri} using the following payload:");
-            AnsiConsole.Write(new JsonText(JsonSerializer.Serialize(payload)));
-            AnsiConsole.WriteLine();
-        }
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            requests = new [] 
+            {
+                new {
+                    httpMethod = "GET",
+                    relativeUrl = $"/{diskResourceId}/providers/microsoft.Insights/metrics?timespan=2023-08-16T00:00:00.000Z/2023-09-15T00:00:00.000Z&interval=FULL&metricnames=Composite Disk Read Bytes%2Fsec&aggregation=average&metricNamespace=microsoft.compute%2Fdisks&validatedimensions=false&api-version=2019-07-01"
+                },
+                new {
+                    httpMethod = "GET",
+                    relativeUrl = $"/{diskResourceId}/providers/microsoft.Insights/metrics?timespan=2023-08-15T18:00:00.000Z/2023-09-15T00:00:00.000Z&interval=PT6H&metricnames=Composite Disk Read Bytes%2Fsec&aggregation=average&metricNamespace=microsoft.compute%2Fdisks&autoadjusttimegrain=true&validatedimensions=false&api-version=2019-07-01"
+                },
+                new {
+                    httpMethod = "GET",
+                    relativeUrl = $"/{diskResourceId}/providers/microsoft.Insights/metrics?timespan=2023-08-16T00:00:00.000Z/2023-09-15T00:00:00.000Z&interval=FULL&metricnames=Composite Disk Write Bytes%2Fsec&aggregation=average&metricNamespace=microsoft.compute%2Fdisks&validatedimensions=false&api-version=2019-07-01"
+                },
+                new {
+                    httpMethod = "GET",
+                    relativeUrl = $"/{diskResourceId}/providers/microsoft.Insights/metrics?timespan=2023-08-15T18:00:00.000Z/2023-09-15T00:00:00.000Z&interval=PT6H&metricnames=Composite Disk Write Bytes%2Fsec&aggregation=average&metricNamespace=microsoft.compute%2Fdisks&autoadjusttimegrain=true&validatedimensions=false&api-version=2019-07-01"
+                }
+            }
         };
 
-        var response = payload == null
-            ? await _client.GetAsync(uri)
-            : await _client.PostAsJsonAsync(uri, payload, options);
+        var response = await ExecuteRequest(true, payload, uri);
+        
+        var vanillaObject = await response.Content.ReadFromJsonAsync<object?>();
 
-        if (includeDebugOutput)
-        {
-            AnsiConsole.WriteLine(
-                $"Response status code is {response.StatusCode} and got payload size of {response.Content.Headers.ContentLength}");
-
-            // if (!response.IsSuccessStatusCode)
-            // {
-            //     AnsiConsole.WriteLine($"Response content: {await response.Content.ReadAsStringAsync()}");
-            // }
-
-            var responsess = await response.Content.ReadFromJsonAsync<object?>();
-            var ttt = JsonSerializer.Serialize(responsess);
-            AnsiConsole.WriteLine($"Response content: {ttt}");
-        }
-
-        response.EnsureSuccessStatusCode();
-        return response;
+        var rawJson = JsonSerializer.Serialize(vanillaObject);
+        
+        AnsiConsole.Write(rawJson);
     }
 
     public async Task<MetricsResponse> RetrieveMetricsForResource()
     {
         var azureResourceUri =
-            // "/subscriptions/cbc9b442-7c6e-415f-80f9-8f772fa43e9a/resourceGroups/UW2LRGEXCH132/providers/Microsoft.Compute/disks/Admigration12_2008_disk";
-            "/subscriptions/c6e364ad-9cd3-4c26-b358-75a532f60a7f/resourceGroups/UW2PRGELK/providers/Microsoft.Compute/disks/uw2pvmelkdat04_OsDisk_1_7b845cfab72548a5b40df1fb8a8e3754";
+                // Attached
+                "/subscriptions/cbc9b442-7c6e-415f-80f9-8f772fa43e9a/resourceGroups/UW2LRGEXCH132/providers/Microsoft.Compute/disks/Admigration12_2008_disk";
+                
+                // Unattached
+                // "/subscriptions/c6e364ad-9cd3-4c26-b358-75a532f60a7f/resourceGroups/UW2PRGELK/providers/Microsoft.Compute/disks/uw2pvmelkdat04_OsDisk_1_7b845cfab72548a5b40df1fb8a8e3754"
+            ;
 
         // var uri = new Uri(
         //     $"{azureResourceUri}/providers/Microsoft.Insights/metrics?api-version=2018-01-01",
         //     UriKind.Relative);
 
+        var metricWithOptionalParamsUri = MetricsUriBuilder
+            .New()
+            .WithAggregation("Average, count")
+            .WithInterval("PT1M")
+            .WithMetricNames(new []
+            {
+                "Composite Disk Read Bytes/sec",
+                "Composite Disk Read Operations/sec",
+                "Composite Disk Write Bytes/sec",
+                "Composite Disk Write Operations/sec",
+                "DiskPaidBurstIOPS",
+            })
+            .WithMetricNamespace("Microsoft.Compute/disks")
+            // .WithOrderBy("")
+            // .WithResultType(ResultType.Data)
+            .ForResource(azureResourceUri)
+            .WithTimespan(
+                new DateTime(2023, 10, 10, 14, 00, 00), 
+                new DateTime(2023, 10, 14, 14, 00, 00))
+            .WithTop(10)
+            .Build();
+        
         var uri = new Uri(
-            $"{azureResourceUri}/providers/Microsoft.Insights/metrics?api-version=2018-01-01",
+            metricWithOptionalParamsUri,
+            // $"{azureResourceUri}/providers/Microsoft.Insights/metrics?api-version=2018-01-01",
             UriKind.Relative);
 
-        var response = await ExecuteToCallApi(true, null, uri);
+        var response = await ExecuteRequest(true, null, uri);
+        
+        var vanillaObject = await response.Content.ReadFromJsonAsync<object?>();
 
-        var metricResponse = await response.Content.ReadFromJsonAsync<MetricsResponse>();
+        var rawJson = JsonSerializer.Serialize(vanillaObject);
+        MetricsResponse? metricResponse = JsonSerializer.Deserialize<MetricsResponse>(rawJson); 
 
-        return metricResponse;
+        return metricResponse ?? null;
     }
 
 }

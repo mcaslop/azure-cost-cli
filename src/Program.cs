@@ -26,6 +26,12 @@ registrations.AddHttpClient("CostApi", client =>
   client.DefaultRequestHeaders.Add("Accept", "application/json");
 }).AddPolicyHandler(PollyPolicyExtensions.GetRetryAfterPolicy());
 
+registrations.AddHttpClient("ManagementApi", client =>
+{
+  client.BaseAddress = new Uri("https://management.azure.com/");
+  client.DefaultRequestHeaders.Add("Accept", "application/json");
+}).AddPolicyHandler(PollyPolicyExtensions.GetRetryAfterPolicy());
+
 registrations.AddHttpClient("RegionsApi", client =>
 {
   client.BaseAddress = new Uri("https://datacenters.microsoft.com/");
